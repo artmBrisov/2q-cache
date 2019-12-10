@@ -9,12 +9,6 @@ Implementation of 2Q (Double Queues) Cache Algorithm.
 npm i 2q-cache
 ```
 
-## Testing:
-```javascript
-npm test
-```
-
-
 ## Usage:
 
 ```javascript

@@ -1,6 +1,6 @@
 {
   "name": "2q-cache",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Imlementation of 2Q Cache Algorithm",
   "main": "index.js",
   "directories": {
