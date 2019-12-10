@@ -1,13 +1,13 @@
 {
   "name": "2q-cache",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Imlementation of 2Q Cache Algorithm",
   "main": "index.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "node ./tests/test.js"
+    "test": "mocha ./tests/test.js"
   },
   "keywords": [
     "cache",
@@ -26,12 +26,15 @@
     "Double Queue"
   ],
   "author": {
-    "name" : "ArtemBorisov",
+    "name": "ArtemBorisov",
     "email": "artpl111222@yandex.ru"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/artmBrisov/2q-cache.git"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  }
 }

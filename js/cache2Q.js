@@ -4,21 +4,10 @@ const lru_1 = require("./utils/lru");
 const buckets_1 = require("./utils/buckets");
 class CacheException extends Error {
     constructor(message) {
-        super();
-        console.error(message);
+        super(message);
     }
 }
-/**
- * @description Объект с параметрами инициализации Cache 2Q.
- * Все переданные параметры должны быть числами.
- * Параметры будут округлены и в поля будут записаны их значения по модулю
- * В случае, если хотя бы один из параметров равен нулю или не является элементом типа number,
- * то будет выброшено исключение CacheConstructorParamsException
- * @param in_ Максимальное количество элементов корзины входа - number
- * @param out_ Размер корзины выхода - number
- * @param main_ Размер главной корзины - number
- * @throws CacheConstructorParamsException
-*/
+exports.CacheException = CacheException;
 /**
  * @class Cache2Q
  * @classdesc 2Q Cache Implementation
@@ -63,7 +52,7 @@ class Cache2Q {
         if (typeof (size) == 'number') {
             newSizes = this.calculateSizes(size);
         }
-        else if (Array.isArray(newSizes)) {
+        else if (Array.isArray(size)) {
             size = size.filter(el => {
                 return typeof (el) === 'number';
             });
@@ -138,10 +127,15 @@ class Cache2Q {
         let found = this.lruCache.get(key);
         if (!found) {
             let transport = this.buckets.get(key);
-            if (transport.needMove) {
-                this.lruCache.set(transport.key, transport.value);
+            if (transport) {
+                if (transport.needMove) {
+                    this.lruCache.set(transport.key, transport.value);
+                }
+                return transport.value;
             }
-            return transport.value;
+            else {
+                return null;
+            }
         }
         return null;
     }

@@ -9,6 +9,12 @@ Implementation of 2Q (Double Queues) Cache Algorithm.
 npm i 2q-cache
 ```
 
+## Testing:
+```javascript
+npm test
+```
+
+
 ## Usage:
 
 ```javascript
@@ -89,5 +95,5 @@ let cache : Cache2Q = new Cache2Q(400);
 
 ## ROADMAP
 
-* `Make Tests`
+* `Add ability to set max cache size in bytes`
 * `Add ability to select type of cache in "main" section from LRU, MRU, LFU caches`
