@@ -1,8 +1,8 @@
 {
   "name": "2q-cache",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Imlementation of 2Q Cache Algorithm",
-  "main": "cache.js",
+  "main": "index.js",
   "directories": {
     "test": "tests"
   },
@@ -12,12 +12,26 @@
   "keywords": [
     "cache",
     "2Q",
-    "2Q",
-    "-",
-    "cache",
+    "2Q cache",
+    "2Q-cache",
+    "2Q Algorithm",
     "lru",
-    "mru"
+    "LRU",
+    "MRU",
+    "LFU",
+    "mru",
+    "lfu",
+    "2Q Cache",
+    "Double Queues",
+    "Double Queue"
   ],
-  "author": "ArtemBorisov",
+  "author": {
+    "name" : "ArtemBorisov",
+    "email": "artpl111222@yandex.ru"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artmBrisov/2q-cache.git"
+  },
   "license": "ISC"
 }
