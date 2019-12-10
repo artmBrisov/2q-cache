@@ -12,7 +12,7 @@ npm i 2q-cache
 ## Usage:
 
 ```javascript
-const Cache2Q = require('./2q-cache/');
+const Cache2Q = require('2q-cache');
 
 let cache = new Cache2Q(400); //sets max count of cache elems
 /*
@@ -32,7 +32,7 @@ let cache = new Cache2Q(400); //sets max count of cache elems
 You also can use Typescript version of 2Q cache module:
 
 ```typescript
-import {Cache2Q} from './2q-cache/ts/cache2Q';
+import {Cache2Q} from '2q-cache/ts/cache2Q';
 
 let cache : Cache2Q = new Cache2Q(400); 
 ```
