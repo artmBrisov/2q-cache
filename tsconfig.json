@@ -1,0 +1,9 @@
+{
+    "compilerOptions" : {
+        "target": "ES2017",
+        "outDir" : "./js",
+        "module": "CommonJS"
+    },
+    "files": ["./ts/cache2Q.ts"],
+    "compileOnSave": true
+}

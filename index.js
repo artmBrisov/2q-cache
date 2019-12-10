@@ -1,0 +1,1 @@
+module.exports = require('./js/cache2Q').Cache2Q;

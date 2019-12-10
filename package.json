@@ -1,0 +1,23 @@
+{
+  "name": "2q-cache",
+  "version": "1.0.0",
+  "description": "Imlementation of 2Q Cache Algorithm",
+  "main": "cache.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node ./tests/test.js"
+  },
+  "keywords": [
+    "cache",
+    "2Q",
+    "2Q",
+    "-",
+    "cache",
+    "lru",
+    "mru"
+  ],
+  "author": "ArtemBorisov",
+  "license": "ISC"
+}
