@@ -1,6 +1,6 @@
 {
   "name": "2q-cache",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Imlementation of 2Q Cache Algorithm",
   "main": "index.js",
   "directories": {
@@ -23,7 +23,10 @@
     "lfu",
     "2Q Cache",
     "Double Queues",
-    "Double Queue"
+    "Double Queue",
+    "node-cache",
+    "node cache",
+    "cache module"
   ],
   "author": {
     "name": "ArtemBorisov",
