@@ -1,7 +1,9 @@
-import { CacheQueue } from "./cache_queue";
-import { CacheQueueElem, CacheMapElem } from "./cache_objects";
+import { Cache } from "./cache";
 
-export class LruCache {
+import { CacheQueue } from "../utils/cache_queue";
+import { CacheQueueElem, CacheMapElem } from "../utils/cache_objects";
+
+export class LruCache implements Cache {
 
     private searcher : Map<any, CacheMapElem>;
     private queue : CacheQueue;
@@ -37,7 +39,7 @@ export class LruCache {
         return true;
     }
 
-    public get(key : any) : object {
+    public get(key : any) : any {
         let foundElem = this.searcher.get(key);
         if (foundElem) {
             let foundListElem = foundElem.linkToList;

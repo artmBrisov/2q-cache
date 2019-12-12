@@ -1,5 +1,7 @@
-import { LruCache } from './utils/lru';
-import { CacheBuckets } from './utils/buckets';
+import { Cache } from './cache/cache';
+import { CacheFactory } from './cache/cache_factory';
+
+import { CacheBuckets } from './buckets/buckets';
 
 export class CacheException extends Error {
     constructor(message) {
@@ -39,7 +41,7 @@ export class Cache2Q {
     private useStringifyKeys : boolean = false;
 
     private buckets : CacheBuckets;
-    private main : LruCache;
+    private main : Cache;
 
     private calculateSizes(size : number) : Array<number> {
         return [
@@ -81,7 +83,7 @@ export class Cache2Q {
             this.useStringifyKeys = false;
         }
         this.buckets = new CacheBuckets(0, 0);
-        this.main = new LruCache(0);
+        this.main = CacheFactory.makeMainStorage("lru");
         this.allocUnsafe(size);
     }
 
@@ -176,7 +178,7 @@ export class Cache2Q {
             let transport = this.buckets.get(key);
             if (transport) {
                 if (transport.needMove) {
-                    this.main.set(transport.key, transport.value);
+                    this.main.set(transport.key, transport.value, transport.timeout);
                 }
                 return transport.value;
             } else {

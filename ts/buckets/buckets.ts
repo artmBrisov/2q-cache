@@ -1,5 +1,5 @@
-import { CacheQueue } from "./cache_queue";
-import { CacheMapElem, CacheQueueElem, BucketsTransportObject } from "./cache_objects";
+import { CacheQueue } from "../utils/cache_queue";
+import { CacheMapElem, CacheQueueElem, BucketsTransportObject } from "../utils/cache_objects";
 
 export class CacheBuckets {
 
@@ -81,6 +81,7 @@ export class CacheBuckets {
             transport.value = foundElem.data;
             let bucket = foundElem.bucket;
             if (bucket === 1) {
+                clearTimeout(foundElem.timeout);
                 this.out.unlink(foundElem.linkToList);
                 this.searcher.delete(key);
                 transport.needMove = true;

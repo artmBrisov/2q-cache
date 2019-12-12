@@ -2,10 +2,11 @@ export class BucketsTransportObject {
     public key : any;
     public value : any;
     public needMove : boolean;
+    public timeout : number;
 }
 
 export class CacheMapElem {
-    public timeout : any = undefined;
+    public timeout : number = undefined;
     public linkToList : CacheQueueElem;
     public bucket : number;
     public data : any = null;

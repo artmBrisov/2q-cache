@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const lru_1 = require("./utils/lru");
-const buckets_1 = require("./utils/buckets");
+const cache_factory_1 = require("./cache/cache_factory");
+const buckets_1 = require("./buckets/buckets");
 class CacheException extends Error {
     constructor(message) {
         super(message);
@@ -40,14 +40,14 @@ class Cache2Q {
         this.useStringifyKeys = false;
         if (typeof (options) === 'object' && !Array.isArray(options)) {
             this.GLOBAL_TTL = this.resolveTtl(options["ttl"]);
-            this.useStringifyKeys = Boolean(options["string-keys"]);
+            this.useStringifyKeys = Boolean(options["stringKeys"]);
         }
         else {
             this.GLOBAL_TTL = 0;
             this.useStringifyKeys = false;
         }
         this.buckets = new buckets_1.CacheBuckets(0, 0);
-        this.main = new lru_1.LruCache(0);
+        this.main = cache_factory_1.CacheFactory.makeMainStorage("lru");
         this.allocUnsafe(size);
     }
     calculateSizes(size) {
@@ -161,7 +161,7 @@ class Cache2Q {
             let transport = this.buckets.get(key);
             if (transport) {
                 if (transport.needMove) {
-                    this.main.set(transport.key, transport.value);
+                    this.main.set(transport.key, transport.value, transport.timeout);
                 }
                 return transport.value;
             }
