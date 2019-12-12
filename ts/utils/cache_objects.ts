@@ -5,6 +5,7 @@ export class BucketsTransportObject {
 }
 
 export class CacheMapElem {
+    public timeout : any = undefined;
     public linkToList : CacheQueueElem;
     public bucket : number;
     public data : any = null;

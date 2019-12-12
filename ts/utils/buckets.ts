@@ -15,7 +15,7 @@ export class CacheBuckets {
         this.searcher = new Map();
     }
 
-    public set(key : any, value : any) : boolean {
+    public set(key : any, value : any, ttl : number = 0) : boolean {
         let oldMapElem = this.searcher.get(key);
         if (!oldMapElem) {
             let newQueueElem = new CacheQueueElem();
@@ -25,6 +25,14 @@ export class CacheBuckets {
             newMapElem.bucket = 0;
             newMapElem.linkToList = newQueueElem;
             newMapElem.data = value;
+
+            clearTimeout(newMapElem.timeout);
+            if (ttl > 0) {
+                newMapElem.timeout = setTimeout(() => {
+                    if (this.has(key)) this.delete(key);
+                },ttl)
+            }
+
     
             let repressedElem =  this.in.push(newQueueElem);
             this.pushToOut(repressedElem);
@@ -32,9 +40,27 @@ export class CacheBuckets {
             this.searcher.set(key, newMapElem);
         } else {
             oldMapElem.data = value;
+            clearTimeout(oldMapElem.timeout);
+            if (ttl > 0) {
+                oldMapElem.timeout = setTimeout(() => {
+                    if (this.has(key)) this.delete(key);
+                },ttl)
+            }
             this.searcher.set(key, oldMapElem);
         }
         return true;
+    }
+
+    updateTtl(key : any, ttl : any) {
+        let mapElem = this.searcher.get(key);
+        if (mapElem) {
+            clearTimeout(mapElem.timeout);
+            if (ttl > 0) {
+                mapElem.timeout = setTimeout(() => {
+                    if (this.has(key)) this.delete(key);
+                },ttl)
+            }
+        }
     }
 
     private pushToOut(elem : CacheQueueElem) : void {
@@ -71,6 +97,9 @@ export class CacheBuckets {
     }
 
     public clear() : void {
+        this.searcher.forEach(value => {
+            clearTimeout(value.timeout);
+        })
         this.searcher.clear();
         this.in.clear();
         this.out.clear();
@@ -78,6 +107,7 @@ export class CacheBuckets {
 
     public delete(key : any) : boolean {
         let delObject = this.searcher.get(key);
+        clearTimeout(delObject.timeout);
         if (delObject.bucket === 0) {
             this.in.unlink(delObject.linkToList);
             this.searcher.delete(key);
@@ -120,11 +150,15 @@ export class CacheBuckets {
         this.in.setSize(inSize);
         while (this.in.getSize() > this.in.getMaxSize()) {
             let deletedElem = this.in.pop();
+            let dElem = this.searcher.get(deletedElem.key);
+            if (dElem) clearTimeout(dElem.timeout);
             this.searcher.delete(deletedElem.key);
         }
         this.out.setSize(outSize);
         while (this.out.getSize() > this.out.getMaxSize()) {
             let deletedElem = this.out.pop();
+            let dElem = this.searcher.get(deletedElem.key);
+            if (dElem) clearTimeout(dElem.timeout);
             this.searcher.delete(deletedElem.key);
         }
     }

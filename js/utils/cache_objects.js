@@ -5,6 +5,7 @@ class BucketsTransportObject {
 exports.BucketsTransportObject = BucketsTransportObject;
 class CacheMapElem {
     constructor() {
+        this.timeout = undefined;
         this.data = null;
     }
 }

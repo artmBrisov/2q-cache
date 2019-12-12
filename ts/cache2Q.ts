@@ -35,8 +35,11 @@ export class CacheException extends Error {
  */
 export class Cache2Q {
 
+    private GLOBAL_TTL : number = 0;
+    private useStringifyKeys : boolean = false;
+
     private buckets : CacheBuckets;
-    private lruCache : LruCache;
+    private main : LruCache;
 
     private calculateSizes(size : number) : Array<number> {
         return [
@@ -69,9 +72,16 @@ export class Cache2Q {
         return newSizes;
     }
 
-    constructor(size : number | Array<number>) {
+    constructor(size : number | Array<number>, options : object) {
+        if (typeof(options) === 'object' && !Array.isArray(options)) {
+            this.GLOBAL_TTL = this.resolveTtl(options["ttl"]);
+            this.useStringifyKeys = Boolean(options["stringKeys"]);
+        } else {
+            this.GLOBAL_TTL = 0;
+            this.useStringifyKeys = false;
+        }
         this.buckets = new CacheBuckets(0, 0);
-        this.lruCache = new LruCache(0);
+        this.main = new LruCache(0);
         this.allocUnsafe(size);
     }
 
@@ -85,13 +95,13 @@ export class Cache2Q {
     public alloc(size : number | Array<number>) : boolean {
         let bucketsSize : Array<number> = this.buckets.getMaxSize();
         let [inSize, outSize] = bucketsSize;
-        let mainSize = this.lruCache.getMaxSize();
+        let mainSize = this.main.getMaxSize();
 
         let newSizes : Array<number> = this.caclulate(size);
 
         if ((newSizes[0] >= inSize) && (newSizes[1] >= outSize) && (newSizes[2] >= mainSize)) {
             this.buckets.setSize(newSizes[0], newSizes[1]);
-            this.lruCache.setSize(newSizes[2]);
+            this.main.setSize(newSizes[2]);
         } else {
             throw new CacheException("Changes to smaller side not allowed.\nYou should use allocUnsafe()");
         }
@@ -108,7 +118,7 @@ export class Cache2Q {
         let newSizes : Array<number> = this.caclulate(size);
 
         this.buckets.setSize(newSizes[0], newSizes[1]);
-        this.lruCache.setSize(newSizes[2]);
+        this.main.setSize(newSizes[2]);
        
         return true;
     }   
@@ -123,12 +133,35 @@ export class Cache2Q {
      * @param key 
      * @param value 
      */
-    public set(key : any, value : any) : boolean {
-        if (this.lruCache.has(key)) {
-            this.lruCache.update(key, value);
+    public set(key : any, value : any, ttl : number = 0) : boolean {
+        key = this.resolveKey(key);
+        ttl = this.resolveTtl(ttl);
+        if (this.main.has(key)) {
+            this.main.update(key, value, ttl);
             return true;
         }
-        return this.buckets.set(key, value);
+        return this.buckets.set(key, value, ttl);
+    }
+
+    /**
+     * 
+     * @param objects Array<objects>, where objects : 
+     * 
+     * {
+     *      key : any,
+     *      value : any,
+     *      ttl : number (optional)
+     * }
+     * 
+     * @returns Array of insertion results (Array<boolean>)
+     */
+
+    public mset(objects : Array<object>) : Array<boolean> {
+        let boolArray = [];
+        objects.forEach(obj => {
+            boolArray.push(this.set(obj["key"], obj["value"], obj["ttl"]));
+        })
+        return boolArray;
     }
 
     /**
@@ -137,12 +170,13 @@ export class Cache2Q {
      */
     
     public get(key : any) : object {
-        let found = this.lruCache.get(key);
+        key = this.resolveKey(key);
+        let found = this.main.get(key);
         if (!found) {
             let transport = this.buckets.get(key);
             if (transport) {
                 if (transport.needMove) {
-                    this.lruCache.set(transport.key, transport.value);
+                    this.main.set(transport.key, transport.value);
                 }
                 return transport.value;
             } else {
@@ -154,12 +188,39 @@ export class Cache2Q {
     }
 
     /**
+     * Returns array of values by presented keys
+     * @param keys Array of keys
+     */
+
+    public mget(keys : Array<any>) : Array<any> {
+        let values : Array<any> = [];
+        keys.forEach(key => {
+            values.push(this.get(key));
+        })
+        return values;
+    }
+
+    /**
      * @description Returns true if key exists, otherwise returns false
      * @param key 
      */
 
     public has(key : any) : boolean {
-        return this.lruCache.has(key) || this.buckets.has(key);
+        key = this.resolveKey(key);
+        return this.main.has(key) || this.buckets.has(key);
+    }
+
+    /**
+     * Returns boolean array with results of has(key[i]) 
+     * @param keys Array of keys
+     */
+
+    public mhas(keys : Array<any>) : Array<boolean> {
+        let boolArray = [];
+        keys.forEach(key => {
+            boolArray.push(this.has(key));
+        })
+        return boolArray;
     }
     
     /**
@@ -171,8 +232,9 @@ export class Cache2Q {
      */
 
     public delete(key : any) : boolean {
-        if (this.lruCache.has(key)) {
-            this.lruCache.delete(key);
+        key = this.resolveKey(key);
+        if (this.main.has(key)) {
+            this.main.delete(key);
             return true;
         } else if(this.buckets.has(key)) {
             this.buckets.delete(key);
@@ -183,21 +245,130 @@ export class Cache2Q {
     }
     
     /**
+     * 
+     * @param keys Array of keys to delete
+     * @returns Array of boolean  - result of each deletion 
+     */
+
+    public mdel(keys : Array<any>) : Array<boolean> {
+        let boolArray = [];
+        keys.forEach(key => {
+            boolArray.push(this.delete(key));
+        })
+        return boolArray;
+    }
+
+    /**
+     * Updates ttl for elem by key
+     * @param keys Array of objects {key : "any key", ttl : number}
+     */
+
+    public resetTtl(key : any, ttl : number) {
+        key = this.resolveKey(key);
+        ttl = this.resolveTtl(ttl);
+        if (this.main.has(key)) {
+            this.main.updateTtl(key, ttl);
+        } else {
+            this.buckets.updateTtl(key, ttl)
+        }
+    }
+
+
+    /**
+     * Updates ttl for each key in param array
+     * @param keys Array of objects {key : "any key", ttl : number}
+     */
+    public mresetTtl(params : Array<object>) {
+        params.forEach((elem) => {
+            this.resetTtl(elem["key"], elem["ttl"]);
+        })
+    }
+
+
+    private resolveTtl(ttl : number) {
+        if (typeof(ttl) === 'number' && ttl > 0) {
+            return ttl;
+        } else {
+            return this.GLOBAL_TTL;
+        }
+    }
+
+    private resolveKey(key : any) {
+        if (this.useStringifyKeys) {
+            if (typeof(key) == 'number') {
+                return String(key);
+            } else if (typeof(key) == 'string') {
+                return key;
+            } else {
+                try { 
+                    return JSON.stringify(key);
+                } catch(e) {
+                    throw new CacheException(`Can't resolve key to string using JSON.stringify.\n You should use 
+                            json-convertable keys or disable 'useStringifyKeys' by method setStringifyKeys(false)`);
+                } 
+            }
+        } else {
+            return key;
+        }
+    }
+
+    /**
      * @description Makes cache empty
      */
     public clear() : boolean {
         this.buckets.clear();
-        this.lruCache.clear();
+        this.main.clear();
+        return true;
+    }
+
+    /**
+     * @description Sets default time to deletion of cache objects.
+     * 
+     * It will be works only for new objects, not for objects, that already exists in cache
+     * 
+     * @param ttl 
+     */
+    public setDefaultTtl(ttl : number) {
+        if (typeof(ttl) === 'number' && ttl > 0) {
+            this.GLOBAL_TTL = ttl;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @description Sets param useStringifyKeys
+     * 
+     * It will be works only for new objects, not for objects, that already exists in cache
+     * 
+     * @param ttl 
+     */
+
+    setStringifyKeys(boolParam : boolean) {
+        this.useStringifyKeys = boolParam;
+    }
+
+    /**
+     * @description Disables default time to deletion of cache objects.
+     * 
+     * It will be works only for new objects, not for objects, that already exists in cache
+     * 
+     * @param ttl 
+     */
+
+    public disableTtl() : boolean {
+        this.GLOBAL_TTL = 0;
         return true;
     }
 
     /**
      * @description Returns js - object, that contains currentCount/maxCount for each cache section
      */
+
     public getSize() : object {
         return {
            buckets : this.buckets.getSizeObject(),
-           main : this.lruCache.getSizeObject()
+           main : this.main.getSizeObject()
         };
     }
 

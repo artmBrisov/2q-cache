@@ -232,3 +232,99 @@ describe("set, get, alloc",function() {
     })
 
 })
+
+describe("test for 1.1.0 methods",function() {
+
+    let asyncTimeout = async (timeout, callback) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                callback() ? resolve() : reject();
+            }, timeout)
+        })
+    }
+
+    describe("mset, mget, mhas, mdel etc...", function() {
+        let cache = new cacheConstructor(10);
+
+        it("mset && mhas", function() {
+            cache.mset([{key : 11, value : 11, ttl : 0}, {key : 12, value : 12, ttl : 1000 * 15}]);
+            if (JSON.stringify(cache.mhas([11, 11])) === JSON.stringify([true, true])) {
+                cache.clear();
+            } else {
+                throw new Error("Unsupported mset behaviour");
+            }
+
+        })
+
+        it("makes mget", function() {
+            cache.mset([{key : 111, value : 111, ttl : 0}, {key : 112, value : 112, ttl : 1000 * 15}]);
+            if (JSON.stringify(cache.mget([111, 675])) === JSON.stringify([111, null])) {
+                cache.clear();
+            } else {
+                throw new Error("Unsupported mget behaviour");
+            }
+
+        })
+
+        it("makes mdel", function() {
+            cache.mset([{key : 111, value : 111, ttl : 0}, 
+                    {key : 112, value : 112, ttl : 1000 * 15}, 
+                    {key : 115, value : 115, ttl : 0}
+                ]
+            );
+            cache.mdel([111,112])
+            if (JSON.stringify(cache.mget([111, 112, 115])) === JSON.stringify([null, null, 115])) {
+                cache.clear();
+            } else {
+                throw new Error("Unsupported mdel behaviour");
+            }
+
+        })
+    })
+
+    describe("Test for ttl",function() {
+        let cache = new cacheConstructor(10);
+
+        it("tests ttl",async function() {
+            cache.setDefaultTtl(1000);
+            cache.set(11, 12);
+            await asyncTimeout(1500, () => {
+                return !cache.has(11);
+            })
+        })
+
+    })
+
+    describe("Test key stringify", function() {
+
+        it("Object keys are not equal by default", function() {
+            let cache = new cacheConstructor(10);
+
+            let awesomeKey = {
+                "1" : 2
+            }
+
+            cache.set({"1" : 2},12);
+
+            if (cache.get(awesomeKey)) {
+                throw new Error("Strange behaviour");
+            }
+        })
+
+        it("JSON strings are equal",function() {
+            let cache = new cacheConstructor(10);
+            let awesomeKey = {
+                "1" : 2
+            }
+            cache.setStringifyKeys(true);
+            cache.set({"1" : 2}, 2);
+            if (!cache.get(awesomeKey)) {
+                throw new Error("Strange behaviour");
+            }
+        })
+
+    })
+
+
+
+})

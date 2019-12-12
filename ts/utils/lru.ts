@@ -11,7 +11,7 @@ export class LruCache {
         this.queue = new CacheQueue(size);
     }
 
-    public set(key : any, value : any) : boolean {
+    public set(key : any, value : any, ttl : number = 0) : boolean {
 
         let newQueueElem = new CacheQueueElem();
         newQueueElem.key = key;
@@ -23,6 +23,12 @@ export class LruCache {
 
         let repressedElem = this.queue.push(newQueueElem);
         this.searcher.set(key, newMapElem);
+
+        if (ttl > 0) {
+            newMapElem.timeout = setTimeout(() => {
+                if (this.has(key)) this.delete(key)
+            }, ttl)
+        }
 
         if (repressedElem != null) {
             this.searcher.delete(repressedElem.key);
@@ -45,6 +51,7 @@ export class LruCache {
     public delete(key : any) : boolean {
         let elemToDelete = this.searcher.get(key);
         if (elemToDelete) {
+            clearTimeout(elemToDelete.timeout);
             this.searcher.delete(key);
             this.queue.unlink(elemToDelete.linkToList);
             elemToDelete.linkToList = null;
@@ -59,13 +66,33 @@ export class LruCache {
     }
 
     public clear() {
+        this.searcher.forEach(value => {
+            clearTimeout(value.timeout);
+        })
         this.searcher.clear();
         this.queue.clear();
     }
 
-    public update(key : any, value : any) : boolean {
+    public update(key : any, value : any, ttl : number = 0) : boolean {
         let mapElem = this.searcher.get(key);
+        clearTimeout(mapElem.timeout);
+        if (ttl > 0) {
+            mapElem.timeout = setTimeout(() => {
+                this.delete(key);
+            }, ttl) 
+        }
         mapElem.data = value;
+        return true;
+    }
+
+    updateTtl(key : any, ttl : number = 0) : boolean {
+        let mapElem = this.searcher.get(key);
+        clearTimeout(mapElem.timeout);
+        if (ttl > 0) {
+            mapElem.timeout = setTimeout(() => {
+                this.delete(key);
+            }, ttl)
+        }
         return true;
     }
 

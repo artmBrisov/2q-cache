@@ -7,7 +7,7 @@ class LruCache {
         this.searcher = new Map();
         this.queue = new cache_queue_1.CacheQueue(size);
     }
-    set(key, value) {
+    set(key, value, ttl = 0) {
         let newQueueElem = new cache_objects_1.CacheQueueElem();
         newQueueElem.key = key;
         let newMapElem = new cache_objects_1.CacheMapElem();
@@ -16,6 +16,12 @@ class LruCache {
         newMapElem.data = value;
         let repressedElem = this.queue.push(newQueueElem);
         this.searcher.set(key, newMapElem);
+        if (ttl > 0) {
+            newMapElem.timeout = setTimeout(() => {
+                if (this.has(key))
+                    this.delete(key);
+            }, ttl);
+        }
         if (repressedElem != null) {
             this.searcher.delete(repressedElem.key);
         }
@@ -35,6 +41,7 @@ class LruCache {
     delete(key) {
         let elemToDelete = this.searcher.get(key);
         if (elemToDelete) {
+            clearTimeout(elemToDelete.timeout);
             this.searcher.delete(key);
             this.queue.unlink(elemToDelete.linkToList);
             elemToDelete.linkToList = null;
@@ -48,12 +55,31 @@ class LruCache {
         return this.searcher.has(key);
     }
     clear() {
+        this.searcher.forEach(value => {
+            clearTimeout(value.timeout);
+        });
         this.searcher.clear();
         this.queue.clear();
     }
-    update(key, value) {
+    update(key, value, ttl = 0) {
         let mapElem = this.searcher.get(key);
+        clearTimeout(mapElem.timeout);
+        if (ttl > 0) {
+            mapElem.timeout = setTimeout(() => {
+                this.delete(key);
+            }, ttl);
+        }
         mapElem.data = value;
+        return true;
+    }
+    updateTtl(key, ttl = 0) {
+        let mapElem = this.searcher.get(key);
+        clearTimeout(mapElem.timeout);
+        if (ttl > 0) {
+            mapElem.timeout = setTimeout(() => {
+                this.delete(key);
+            }, ttl);
+        }
         return true;
     }
     getSize() {
