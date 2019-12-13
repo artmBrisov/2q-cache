@@ -39,9 +39,12 @@ export class Cache2Q {
 
     private GLOBAL_TTL : number = 0;
     private useStringifyKeys : boolean = false;
+    private useTtlInMain : boolean = false;
+
 
     private buckets : CacheBuckets;
     private main : Cache;
+    private mainStorageType : string;
 
     private calculateSizes(size : number) : Array<number> {
         return [
@@ -78,12 +81,16 @@ export class Cache2Q {
         if (typeof(options) === 'object' && !Array.isArray(options)) {
             this.GLOBAL_TTL = this.resolveTtl(options["ttl"]);
             this.useStringifyKeys = Boolean(options["stringKeys"]);
+            this.useTtlInMain = Boolean(options["ttlInMain"]);
+            this.mainStorageType = options["mainStorageType"] || 'lru';
         } else {
             this.GLOBAL_TTL = 0;
             this.useStringifyKeys = false;
+            this.useTtlInMain = false;
+            this.mainStorageType = 'lru';
         }
         this.buckets = new CacheBuckets(0, 0);
-        this.main = CacheFactory.makeMainStorage("lru");
+        this.main = CacheFactory.makeMainStorage(this.mainStorageType);
         this.allocUnsafe(size);
     }
 
@@ -178,7 +185,8 @@ export class Cache2Q {
             let transport = this.buckets.get(key);
             if (transport) {
                 if (transport.needMove) {
-                    this.main.set(transport.key, transport.value, transport.timeout);
+                    let timeout = this.useTtlInMain ? transport.timeout : 0;
+                    this.main.set(transport.key, transport.value, timeout);
                 }
                 return transport.value;
             } else {

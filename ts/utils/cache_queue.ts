@@ -23,6 +23,24 @@ export class CacheQueue {
         this.maxCount = size;
     }
 
+    unshift(elem : CacheQueueElem) : CacheQueueElem {
+        let oldHead = this.head.next;
+        if (oldHead) {
+            oldHead.prev = elem;
+        }
+        elem.next = oldHead;
+        this.head.next = elem;
+        this.count++;
+        if (this.count > this.maxCount) {
+            if (this.last !== null) {
+                this.last = this.last.prev;
+                this.count--;
+                return this.unlink(this.last.next);
+            }
+        }
+        return null;
+    }
+
     push(elem : CacheQueueElem) : CacheQueueElem {
         if (this.head.next === null) {
             this.head.next = elem;

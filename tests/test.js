@@ -3,6 +3,8 @@ process.env.NODE_ENV = 'test';
 const cacheConstructor = require('../index');
 const CacheException = require('../js/cache2Q').CacheException;
 
+const CacheHeap = require('../js/utils/cache_heap').CacheHeap;
+
 describe("construct", function() {
     it("init cache with size 200",function () {
 
@@ -324,7 +326,39 @@ describe("test for 1.1.0 methods",function() {
         })
 
     })
+})
 
+describe("heap tests", function() {
+    let heap = new CacheHeap(4);
 
+    it("Add some elements to heap", function() {
+        heap.insert({key : 6});
+        heap.insert({key : 5});
+        heap.insert({key : 7});
+        heap.insert({key : 4});
+        console.log(heap.toStringKeys());
+        if (heap.toStringKeys()[0] != '4') {
+            throw new Error("Undefined behaviour");
+          
+        }
+    })
+
+    it("Tests overheap behaviour", function() {
+        heap.insert({key : 6});
+        console.log(heap.toStringKeys());
+        if (heap.toStringKeys()[0] != '5') {
+            throw new Error("Undefined behaviour");
+          
+        }
+    })
+
+    it("Tests 'delete'", function() {
+        heap.delete(0);
+        console.log(heap.toStringKeys());
+        if (heap.toStringKeys()[0] != '6') {
+            throw new Error("Undefined behaviour");
+          
+        }
+    })
 
 })

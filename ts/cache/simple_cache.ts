@@ -3,12 +3,15 @@ import { Cache } from "./cache";
 import { CacheQueue } from "../utils/cache_queue";
 import { CacheQueueElem, CacheMapElem } from "../utils/cache_objects";
 
-export class LruCache implements Cache {
+export class SimpleCache implements Cache {
 
     private searcher : Map<any, CacheMapElem>;
     private queue : CacheQueue;
 
-    constructor(size) {
+    private type : string;
+
+    constructor(size, type : string = "lru") {
+        this.type = type;
         this.searcher = new Map();
         this.queue = new CacheQueue(size);
     }
@@ -23,7 +26,9 @@ export class LruCache implements Cache {
         newMapElem.linkToList = newQueueElem;
         newMapElem.data = value;
 
-        let repressedElem = this.queue.push(newQueueElem);
+        let repressedElem = this.type === "lru" ? this.queue.push(newQueueElem) 
+                :this.queue.unshift(newQueueElem);
+            
         this.searcher.set(key, newMapElem);
 
         if (ttl > 0) {

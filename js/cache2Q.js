@@ -38,16 +38,21 @@ class Cache2Q {
     constructor(size, options) {
         this.GLOBAL_TTL = 0;
         this.useStringifyKeys = false;
+        this.useTtlInMain = false;
         if (typeof (options) === 'object' && !Array.isArray(options)) {
             this.GLOBAL_TTL = this.resolveTtl(options["ttl"]);
             this.useStringifyKeys = Boolean(options["stringKeys"]);
+            this.useTtlInMain = Boolean(options["ttlInMain"]);
+            this.mainStorageType = options["mainStorageType"] || 'lru';
         }
         else {
             this.GLOBAL_TTL = 0;
             this.useStringifyKeys = false;
+            this.useTtlInMain = false;
+            this.mainStorageType = 'lru';
         }
         this.buckets = new buckets_1.CacheBuckets(0, 0);
-        this.main = cache_factory_1.CacheFactory.makeMainStorage("lru");
+        this.main = cache_factory_1.CacheFactory.makeMainStorage(this.mainStorageType);
         this.allocUnsafe(size);
     }
     calculateSizes(size) {
@@ -161,7 +166,8 @@ class Cache2Q {
             let transport = this.buckets.get(key);
             if (transport) {
                 if (transport.needMove) {
-                    this.main.set(transport.key, transport.value, transport.timeout);
+                    let timeout = this.useTtlInMain ? transport.timeout : 0;
+                    this.main.set(transport.key, transport.value, timeout);
                 }
                 return transport.value;
             }

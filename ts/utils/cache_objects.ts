@@ -22,3 +22,16 @@ export class CacheQueueHead {
     public data : null;
     public next : CacheQueueElem = null;
 }
+
+export class LfuMapElem {
+    public timeout : number = undefined;
+    public linkToHeap : CacheHeapElem;
+    public bucket : number;
+    public data : any = null;
+}
+
+export class CacheHeapElem {
+    public key : any = null;
+    public count : number = 0;
+    public index : number = -1;
+}

@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const cache_queue_1 = require("./cache_queue");
-const cache_objects_1 = require("./cache_objects");
-class LruCache {
-    constructor(size) {
+const cache_queue_1 = require("../utils/cache_queue");
+const cache_objects_1 = require("../utils/cache_objects");
+class SimpleCache {
+    constructor(size, type = "lru") {
+        this.type = type;
         this.searcher = new Map();
         this.queue = new cache_queue_1.CacheQueue(size);
     }
@@ -14,7 +15,8 @@ class LruCache {
         newMapElem.bucket = 2;
         newMapElem.linkToList = newQueueElem;
         newMapElem.data = value;
-        let repressedElem = this.queue.push(newQueueElem);
+        let repressedElem = this.type === "lru" ? this.queue.push(newQueueElem)
+            : this.queue.unshift(newQueueElem);
         this.searcher.set(key, newMapElem);
         if (ttl > 0) {
             newMapElem.timeout = setTimeout(() => {
@@ -102,4 +104,4 @@ class LruCache {
         }
     }
 }
-exports.LruCache = LruCache;
+exports.SimpleCache = SimpleCache;

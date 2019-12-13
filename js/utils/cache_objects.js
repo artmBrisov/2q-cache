@@ -24,3 +24,18 @@ class CacheQueueHead {
     }
 }
 exports.CacheQueueHead = CacheQueueHead;
+class LfuMapElem {
+    constructor() {
+        this.timeout = undefined;
+        this.data = null;
+    }
+}
+exports.LfuMapElem = LfuMapElem;
+class CacheHeapElem {
+    constructor() {
+        this.key = null;
+        this.count = 0;
+        this.index = -1;
+    }
+}
+exports.CacheHeapElem = CacheHeapElem;
