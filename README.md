@@ -1,8 +1,7 @@
 # 2Q cache
 
-Implementation of 2Q (Double Queues) Cache Algorithm.
-2Q demonstrates better cache hit than the most popular LRU (Last Recently Used) cache.
-
+Simple and configurable cache library for Node.js and Browser that implements 2Q Cache algorithm (http://www.vldb.org/conf/1994/P439.PDF)
+This algorithm tries to preserve the most used elements, so it demonstrates better cache hit than other caches,for example, LRU (Least Recently Used) cache.
 ## Installation:
 
 ```
@@ -36,15 +35,19 @@ const Cache2Q = require('2q-cache');
 
 let options = {
     ttl : 1000 * 60 * 60, //default time to delete elements from cache : number
-    stringKeys : true // If stringKeys are true, keys of cache elements will be convert to string by JSON.stringify
+    stringKeys : true, // If stringKeys are true, keys of cache elements will be convert to string by JSON.stringify
+    ttlInMain : false, //you can disable time to delete in 'main' section of cache. It can be useful, because in main                           //section stored most requested cache elements
+    mainStorageType : 'lfu' //Type of main storage. It can be 'lru' - Least Recently Used,
+                            //'mru' - Most Recently used,
+                            //'lfu' - Least-Frequently used
 }
 
-let cache = new Cache2Q(400, options);
+let cache = new Cache2Q(400, options); //or ([100,200,250], options);
 
 ```
 
 By default
-*  `cache ttl equals 0, so elements will not be removed by ttl`
+*  `cache ttl (lifetime) equals 0, so elements will not be removed by timeout`
 *  `stringKeys are false, so new elements are saving "as is", without using JSON.stringify`
 
 
@@ -59,8 +62,9 @@ let cache : Cache2Q = new Cache2Q(400);
 
 ## API
 
-* `set(key : any, value : any, ttl : number = 0)`
+* `set(key : any, value : any, ttl : number = 0 (optional))`
 
+    Sets new pair (key, value) with lifetime (optional)
     if key exists, it updates value and ttl
     parameter ttl overrides default ttl settings
 
@@ -70,6 +74,7 @@ let cache : Cache2Q = new Cache2Q(400);
 
 * `get(key) => value`
 
+    Returns value by presented key
     if key doesn't exists, returns null
 
 * `mget(Array<key : any>) : Array<values : any>`
@@ -78,7 +83,7 @@ let cache : Cache2Q = new Cache2Q(400);
 
 * `has(key) => boolean`
 
-    Returns true/false without moving element in cache
+    Returns true if key exists, otherwise returns false
 
 * `mhas(Array<key : any>) : Array<boolean>`
 
@@ -87,7 +92,7 @@ let cache : Cache2Q = new Cache2Q(400);
 * `delete(key : any) => boolean`
 
     deletes pair (key, value) from cache.
-    If element doesn't exist, returns false.
+    If element doesn't exists, returns false.
 
 * `mdel(keys : Array<any>) : Array<boolean>`
 
@@ -95,7 +100,7 @@ let cache : Cache2Q = new Cache2Q(400);
 
 * `resetTtl(key : any, ttl : number)`
 
-    resets ttl for element by presented key. Overrides default ttl settings
+    resets (overrides) ttl for element by presented key.
 
 * `mresetTtl(keys : Array<object {key : any, ttl : number}>)`
 
@@ -103,11 +108,12 @@ let cache : Cache2Q = new Cache2Q(400);
 
 * `setDefaultTtl(ttl : number)`
 
-    sets default ttl. New ttl will not be default ttl for already exists objects in cache 
+    sets default ttl.
 
 * `setStringifyKeys(param : boolean)`
 
-    overrides default setting for stringify keys
+    overrides default setting for stringify keys.
+    if stringify keys are true, keys will be converted to string by JSON.stringify
 
 * `clear()` 
 
@@ -147,5 +153,4 @@ let cache : Cache2Q = new Cache2Q(400);
 
 ## ROADMAP
 
-* `Add ability to select type of cache in "main" section from LRU, MRU, LFU caches`
-* `Any other ideas?`
+* `Any ideas?`

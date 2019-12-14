@@ -13,28 +13,8 @@ export class CacheException extends Error {
  * @class Cache2Q
  * @classdesc 2Q Cache Implementation
  * @author ArtemBorisov
- * @description 
- * API
- * 
- * 0) 
- * 
- * 1) set (key : any, value : any) : boolean |
- * Inserts pair(key, value) in cache. If key exists, it will be delete and insert again
- * 
- * 2) get (key : any) : any value |
- * Returns value by presented key or null if key doesn't exists
- * 
- * 3) has (key : any) : boolean |
- * Returns true if key exists otherwise returns false
- * 
- * 4) delete (key : any) : boolean |
- * Deletes pair (key, value) from cache. If pair (key, value) doesn't exists,
- * returns false, otherwise returns true
- * 
- * 5) alloc(size : number or CacheConstructorParams) - see description of alloc on docs / in code
- * 
- * 6) allocUnsafe(size : number or CacheConstructorParams) - see description of allocUnsafe on docs / in code
- */
+*/
+
 export class Cache2Q {
 
     private GLOBAL_TTL : number = 0;
