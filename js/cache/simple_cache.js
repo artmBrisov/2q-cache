@@ -103,5 +103,11 @@ class SimpleCache {
             this.searcher.delete(deletedElem.key);
         }
     }
+    getData() {
+        return {
+            searcher: this.searcher,
+            data: this.queue.getData()
+        };
+    }
 }
 exports.SimpleCache = SimpleCache;

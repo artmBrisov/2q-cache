@@ -126,4 +126,11 @@ export class SimpleCache implements Cache {
         }
     }
 
+    getData() : object {
+        return {
+            searcher : this.searcher,
+            data : this.queue.getData()
+        }
+    }
+
 }

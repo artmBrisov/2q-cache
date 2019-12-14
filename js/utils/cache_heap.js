@@ -52,7 +52,7 @@ class CacheHeap {
     }
     delete(elem) {
         let i = elem.index;
-        this.data[i].key = Infinity;
+        this.data[i].count = Infinity;
         let pos = this.siftDown(i);
         let elemToDelete = this.data[pos];
         this.data[pos] = undefined;
@@ -100,6 +100,17 @@ class CacheHeap {
             keys.push(this.data[i].key);
         }
         return keys.join(" ");
+    }
+    getData() {
+        let dataArray = [];
+        this.data.forEach((elem) => {
+            dataArray.push(elem.key);
+        });
+        return {
+            data: this.data,
+            count: this.count,
+            maxCount: this.maxCount
+        };
     }
     getCount() {
         return this.count;

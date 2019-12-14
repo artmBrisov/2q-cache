@@ -122,5 +122,11 @@ class LfuCache {
             maxSize: this.heap.getMaxCount()
         };
     }
+    getData() {
+        return {
+            searcher: this.searcher,
+            data: this.heap.getData()
+        };
+    }
 }
 exports.LfuCache = LfuCache;

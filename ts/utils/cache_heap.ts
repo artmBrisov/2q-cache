@@ -1,4 +1,4 @@
-import { CacheHeapElem, LfuMapElem } from "./cache_objects";
+import { CacheHeapElem} from "./cache_objects";
 
 export class CacheHeap {
     private count : number = 0;
@@ -60,7 +60,7 @@ export class CacheHeap {
 
     delete(elem : CacheHeapElem) : CacheHeapElem {
         let i : number = elem.index;
-        this.data[i].key = Infinity;
+        this.data[i].count = Infinity;
         let pos = this.siftDown(i);
         let elemToDelete = this.data[pos];
         this.data[pos] = undefined;
@@ -114,6 +114,18 @@ export class CacheHeap {
             keys.push(this.data[i].key);
         }
         return keys.join(" ");
+    }
+
+    getData() : object {
+        let dataArray = [];
+        this.data.forEach((elem) => {
+            dataArray.push(elem.key);
+        })
+        return {
+            data : this.data,
+            count : this.count,
+            maxCount : this.maxCount
+        }
     }
 
     getCount() {

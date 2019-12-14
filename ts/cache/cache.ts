@@ -10,4 +10,5 @@ export interface Cache {
     getMaxSize() : number;
     setSize(size : number) : void;
     getSizeObject() : object;
+    getData() : object;
 }

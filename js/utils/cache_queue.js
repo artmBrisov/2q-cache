@@ -79,5 +79,18 @@ class CacheQueue {
     getMaxSize() {
         return this.maxCount;
     }
+    getData() {
+        let dataArray = [];
+        let cursor = this.head.next;
+        while (cursor != null) {
+            dataArray.push(cursor.key);
+            cursor = cursor.next;
+        }
+        return {
+            data: dataArray,
+            count: this.count,
+            maxCount: this.maxCount
+        };
+    }
 }
 exports.CacheQueue = CacheQueue;

@@ -331,11 +331,14 @@ describe("test for 1.1.0 methods",function() {
 describe("heap tests", function() {
     let heap = new CacheHeap(4);
 
+    let deleteElem = {key : 6, count : 6, index : -1};
+
     it("Add some elements to heap", function() {
-        heap.insert({key : 6});
-        heap.insert({key : 5});
-        heap.insert({key : 7});
-        heap.insert({key : 4});
+
+        heap.insert(deleteElem);
+        heap.insert({key : 5, count : 5, index : -1});
+        heap.insert({key : 7, count : 7, index : -1});
+        heap.insert({key : 4, count : 4, index : -1});
         console.log(heap.toStringKeys());
         if (heap.toStringKeys()[0] != '4') {
             throw new Error("Undefined behaviour");
@@ -344,21 +347,78 @@ describe("heap tests", function() {
     })
 
     it("Tests overheap behaviour", function() {
-        heap.insert({key : 6});
+        heap.insert({key : 9, count : 0, index : -1});
         console.log(heap.toStringKeys());
-        if (heap.toStringKeys()[0] != '5') {
+        if (heap.toStringKeys()[0] != '9') {
             throw new Error("Undefined behaviour");
           
         }
     })
 
     it("Tests 'delete'", function() {
-        heap.delete(0);
+        heap.delete(deleteElem);
         console.log(heap.toStringKeys());
-        if (heap.toStringKeys()[0] != '6') {
-            throw new Error("Undefined behaviour");
+        let s = heap.toStringKeys().trim();
+        if (s[s.length - 1] != '7') {
+             throw new Error("Undefined behaviour");
           
         }
+    })
+
+})
+
+describe("MRU && LFU CACHE", function() {
+
+    describe("constructs", function() {
+        it("constructs with lru", function() {
+            let cache = new cacheConstructor(10, {mainStorageType : "mru"})
+        })
+    
+        it("constructs with mru", function() {
+            let cache = new cacheConstructor(10, {mainStorageType : "mru"})
+        })
+        
+        it("constructs with lfu", function() {
+            let cache = new cacheConstructor(10, {mainStorageType : "lfu"})
+        })
+        
+        it("constructs with unsupported type", function() {
+            try {
+                let cache = new cacheConstructor(10, {mainStorageType : "ffr"})
+                throw new Error("Unsupported behaviour");
+            } catch(e) {
+                if (!(e instanceof CacheException)) {
+                    throw e
+                }
+            }
+        })
+    })
+
+    describe("tests LFU type of 'main' storage",function() {
+        let lfu = new cacheConstructor(5, {mainStorageType : "lfu"});
+
+        it("adds elem to cache", function() {
+            let expected = JSON.stringify([true, true, true, false]);
+
+            lfu.set(11,11);
+            lfu.set(12,12);
+            lfu.set(13,13);
+
+            let actual = JSON.stringify([lfu.has(11), lfu.has(12), lfu.has(13), lfu.has(14)]);
+            console.log(actual)
+            if (expected != actual) {
+                throw new Error("Unexpected behaviour");
+            }
+        })
+
+        it ("gets elem from cache", function() {
+            let expected = JSON.stringify([11, 12, 13, null]);
+            let actual = JSON.stringify([lfu.get(11), lfu.get(12), lfu.get(13), lfu.get(14)]);
+            console.log(actual);
+            if (expected != actual) {
+                throw new Error("Unexpected behaviour");
+            }
+        })
     })
 
 })

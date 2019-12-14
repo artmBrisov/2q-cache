@@ -141,4 +141,11 @@ export class LfuCache implements Cache {
             maxSize : this.heap.getMaxCount()
         }
     }
+
+    getData() : object {
+        return {
+            searcher : this.searcher,
+            data : this.heap.getData()
+        }
+    }
 }
